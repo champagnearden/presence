@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Moodle Auto Fetch presence",
+  "version": "1.0",
+  "permissions": [
+    "activeTab",
+    "webRequest",
+    "declarativeNetRequest",
+    "cookies",
+    "alarms",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://moodle.univ-ubs.fr/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://moodle.univ-ubs.fr/mod/attendance/view.php?id=421553"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  }
+}
