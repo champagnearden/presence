@@ -60,7 +60,7 @@ function retrieveCredentials() {
 
 async function loginAndFetch(username) {
     //const loginUrl = 'https://moodle.univ-ubs.fr/login/index.php';
-    const attendanceUrl = 'https://moodle.univ-ubs.fr/mod/attendance/view.php?id=421553';
+    const attendanceUrl = 'https://moodle.univ-ubs.fr/mod/attendance/view.php?id=433343';
 
     //const formData = new URLSearchParams();
     //formData.append('username', username);
