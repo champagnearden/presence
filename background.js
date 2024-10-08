@@ -58,57 +58,50 @@ function retrieveCredentials() {
   }
   
 
-async function loginAndFetch(username) {
-    //const loginUrl = 'https://moodle.univ-ubs.fr/login/index.php';
-    // TODO: remplacer id du cours par id custom
-    const attendanceUrl = 'https://moodle.univ-ubs.fr/mod/attendance/view.php?id=433343';
-
-    //const formData = new URLSearchParams();
-    //formData.append('username', username);
-
-    try {
-        // Login and get attendance page HTML
-        //const loginResponse = await fetch(loginUrl, {
-        //    method: 'POST',
-        //    body: formData,
-        //    credentials: 'include'
-        //});
-//
-        //if (!loginResponse.ok) {
-        //    throw new Error('Login failed');
-        //}
-
-        const attendanceResponse = await fetch(attendanceUrl, {
-            credentials: 'include'
+  async function createOffscreenDocument() {
+    const exists = await chrome.offscreen.hasDocument();
+    if (!exists) {
+        await chrome.offscreen.createDocument({
+            url: chrome.runtime.getURL('xam.html'),
+            reasons: [chrome.offscreen.Reason.DOM_PARSER],
+            justification: 'Need to parse attendance HTML document',
         });
-
-        const data = await attendanceResponse.text();
-
-        // Find the unique <a> element inside the table using regex
-        const regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/g;
-        let match;
-        let targetLink = null;
-
-        while ((match = regex.exec(data)) !== null) {
-            // Adjust the condition to match your specific criteria for uniqueness
-            // For example, check text content or any other attribute
-            if (match[0].includes('Renseigner le status de présence')) {
-                targetLink = match[2];
-                break; // Found the target link, exit the loop
-            }
-        }
-
-        if (targetLink) {
-            console.log('Found target link:', targetLink);
-
-            // Optionally, interact with the link or perform further actions
-            // Due to Manifest V3 restrictions, you may need a content script for interaction
-        } else {
-            console.log('Target link not found.');
-        }
-
-    } catch (error) {
-        console.error('Error:', error);
+        console.log("Offscreen document created");
     }
 }
+
+// Function to fetch HTML and send it to the offscreen document for parsing
+async function loginAndFetch(username) {
+    const attendanceUrl = 'https://moodle.univ-ubs.fr/mod/attendance/view.php?id=433343';
+    try {
+        // Fetch the HTML response
+        const attendanceResponse = await fetch(attendanceUrl, {
+            credentials: 'include',
+        });
+
+        // Get the response as a text string
+        const htmlString = await attendanceResponse.text();
+
+        // Ensure the offscreen document is created
+        await createOffscreenDocument();
+
+        // Send the HTML string to the offscreen document for parsing
+        chrome.runtime.sendMessage({ htmlString });
+        console.log("Message sent to offscreen document");
+    } catch (error) {
+        console.error("Error fetching or parsing HTML:", error);
+    }
+}
+
+// Handle the message when the link is returned from the offscreen document
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.targetLink) {
+        console.log("Target link found:", message.targetLink);
+        // Do something with the target link, such as opening it
+        chrome.tabs.create({ url: message.targetLink });
+    } else {
+        console.log("No target link found in the message.");
+    }
+});
+
 

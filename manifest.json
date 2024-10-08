@@ -8,7 +8,9 @@
     "declarativeNetRequest",
     "cookies",
     "alarms",
-    "storage"
+    "storage",
+    "offscreen", 
+    "tabs"
   ],
   "host_permissions": [
     "https://moodle.univ-ubs.fr/*"
